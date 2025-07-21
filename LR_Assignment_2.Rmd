@@ -1,6 +1,5 @@
 ---
 title: "code_assignment2_h1528753_h1213195"
-author: "Mihajlovic Nikola - h1528753; Polianska Daria - h1213195"
 date: "2025-05-29"
 output:
   html_document:
