@@ -1,0 +1,94 @@
+---
+title: "code_assignment2_h1528753_h1213195"
+author: "Mihajlovic Nikola - h1528753; Polianska Daria - h1213195"
+date: "2025-05-29"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Assignment 2
+
+```{r}
+library(readr)   
+library(effsize)     
+library(pwr)  
+library(lmtest)
+
+```
+
+```{r}
+crime_data <- read_csv("crime.csv")
+head(crime_data)
+
+summary(crime_data)
+```
+## V)
+
+```{r}
+reg_crime <- lm(arrests ~ treated, data = crime_data)
+summary(reg_crime)
+```
+
+```{r}
+before_change <- crime_data$arrests[crime_data$treated == "before"]
+after_change <- crime_data$arrests[crime_data$treated == "after"]
+```
+
+```{r}
+t_test_result <- t.test(before_change, after_change, alternative = "greater")
+t_test_result
+```
+
+
+## VI)Example: Metal detector at an airport
+
+**Type I Error (False Positive)**:  
+The alarm goes off, but the passenger has **no weapon**.  
+ - We wrongly suspect a threat that doesn't exist.  
+ - In hypothesis terms: we rejected the null (safe) when it was actually true.
+
+**Type II Error (False Negative)**:  
+The passenger **has a weapon**, but the detector does **not go off**.  
+ - We fail to detect a real threat.  
+ - We failed to reject the null (safe) when it was actually false.
+
+## VII) Cohen's d effect size:
+
+```{r}
+d_size <- cohen.d(before_change, after_change, pooled=TRUE)
+d_size
+```
+
+## VIII) Power Level
+```{r}
+table(crime_data$treated)
+
+d_value <- as.numeric(d_size$estimate)
+d_value
+```
+
+```{r}
+pwr_result <- pwr.t.test(
+  d = d_value, 
+  n = 50, 
+  sig.level = 0.05,
+  type = "two.sample", 
+  alternative = "two.sided")
+
+pwr_result
+```
+
+We calculated the power of the two-sample t-test using the estimated Cohen’s d of 0.466 and a sample size of 50 per group.
+
+Power is the probability that our test will correctly dtect a real effect or reject the null hypothesis when
+the alternative is true.
+
+The power result is around 64%. This means that if there really is an effect of this size, our test has a 64% chance of detecting it,
+which is relatively low or moderate but not ideal, because it tends to lead to **Type 2 Errors (false negatives)**.
+
+

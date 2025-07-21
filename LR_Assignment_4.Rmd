@@ -1,0 +1,133 @@
+---
+title: "assignment_4_h1528753_h1213195"
+author: "Mihajlovic Nikola - h1528753; Polianska Daria - h1213195"
+date: "2025-06-13"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Assignment 4
+
+```{r}
+library(haven)     
+library(dplyr)
+library(ggplot2)
+library(car)
+```
+
+```{r}
+data <- read_dta("nlsw88.dta")
+
+head(data)
+summary(data)
+```
+
+## I)
+```{r}
+model <- lm(wage ~ south + ttl_exp, data = data)
+summary(model)
+```
+Holding total experience constant, women who live in the South (south = 1) earn less per hour on average than women who do not live in the South (south = 0). Yes, statistically significant at the 1% level.
+
+## II)
+```{r}
+coef_vals <- coef(model)
+intercept_nonsouth <- coef_vals["(Intercept)"]
+slope <- coef_vals["ttl_exp"]
+intercept_south <- intercept_nonsouth + coef_vals["south"]
+
+ggplot(data, aes(x = ttl_exp, y = wage, color = factor(south))) +
+  geom_point(alpha = 0.5) +
+  geom_abline(intercept = intercept_nonsouth, slope = slope, color = "blue", linetype = "solid", linewidth = 1) +
+  geom_abline(intercept = intercept_south, slope = slope, color = "red", linetype = "dashed", linewidth = 1) +
+  labs(
+    title = "Wage vs Total Experience with Regression Lines by South",
+    x = "Total Work Experience",
+    y = "Hourly Wage",
+    color = "South (0 = No, 1 = Yes)"
+  ) +
+  theme_minimal()
+```
+
+The scatterplot displays two regression lines based on the south dummy. The lines are parallel, indicating a difference in intercepts but not in slopes between groups.
+
+## III)
+```{r}
+cor(data$age, data$ttl_exp, use = "complete.obs")
+```
+Low correlation suggests multicollinearity is not a major concern.
+
+## IV)
+```{r}
+data$one_job <- ifelse(round(data$ttl_exp, 2) == round(data$tenure, 2), 1, 0)
+
+model_new <- lm(wage ~ south + ttl_exp + one_job, data = data)
+summary(model_new)
+```
+The coefficient of one_job is -0.17, indicating that women who have held only one job earn $0.17 less per hour on average than those who have held more than one job, holding other variables constant. However, the p-value is 0.716, which means the coefficient is not statistically significant. Therefore, we cannot conclude that holding only one job has a meaningful effect on wage in this model.
+
+## V)
+```{r}
+model_interaction <- lm(wage ~ south * ttl_exp, data = data)
+summary(model_interaction)
+```
+The coefficient on the interaction term south:ttl_exp is -0.0836, suggesting that the effect of work experience on wage is slightly lower for women in the South compared to those outside the South. However, the p-value is 0.104, meaning the interaction is not statistically significant at the 5% level.This implies no strong statistical evidence of heterogeneity in the effect of work experience on wages between southern and non-southern women in this model.
+
+## VI)
+```{r}
+coef_interaction <- coef(model_interaction)
+intercept_nonsouth <- coef_interaction["(Intercept)"]
+slope_nonsouth <- coef_interaction["ttl_exp"]
+intercept_south <- intercept_nonsouth + coef_interaction["south"]
+slope_south <- slope_nonsouth + coef_interaction["south:ttl_exp"]
+
+ggplot(data, aes(x = ttl_exp, y = wage, color = factor(south))) +
+  geom_point(alpha = 0.5) +
+  geom_abline(intercept = intercept_nonsouth, slope = slope_nonsouth, color = "blue", linetype = "solid", size = 1) +
+  geom_abline(intercept = intercept_south, slope = slope_south, color = "red", linetype = "dashed", size = 1) +
+  labs(
+    title = "Wage vs Experience with Interaction by South",
+    x = "Total Work Experience",
+    y = "Hourly Wage",
+    color = "South (0 = No, 1 = Yes)"
+  ) +
+  theme_minimal()
+```
+
+## VII)
+```{r}
+model_south <- lm(wage ~ ttl_exp, data = filter(data, south == 1))
+model_nonsouth <- lm(wage ~ ttl_exp, data = filter(data, south == 0))
+summary(model_south)
+summary(model_nonsouth)
+
+coef(model_south)
+coef(model_nonsouth)
+coef(model_interaction)
+```
+
+The separate regressions show that non-Southern women start with higher wages and earn more per year of experience compared to Southern women. These differences  match the values estimated in the interaction model. This consistency confirms that the interaction model accurately captures the regional differences in how work experience affects wage outcomes.
+
+## VIII)
+
+```{r}
+model_collgrad <- lm(wage ~ collgrad, data = data)
+model_full <- lm(wage ~ collgrad + grade, data = data)
+summary(model_collgrad)
+summary(model_full)
+```
+
+When grade is omitted, the coefficient on collgrad is 3.6155, suggesting a larger wage for having a college degree. However, once grade is included, the coefficient drops to 0.24170 and becomes statistically insignificant. This shows that most of the effect attributed to collgrad was actually due to differences in years of education, indicating strong omitted variable bias. The OVB is approximately 3.3738.
+
+## IX)
+
+```{r}
+delta_coef <- coef(model_collgrad)["collgrad"] - coef(model_full)["collgrad"]
+delta_coef
+```
+
+As confirmed using the manual calculation based on the slides, the OVB is 3.37.

@@ -1,0 +1,90 @@
+---
+title: "LR_Assignment_1"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+date: "2025-05-22"
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# required libraries
+# install.packages("ggplot2")
+# install.packages("readr")
+# install.packages("lmtest")
+library(ggplot2)
+library(readr)
+library(lmtest)
+```
+# Authors: Polianska Daria -  h1213195; Nikola Mihajlovic - h1528753;
+
+### i) load the dataset
+```{r}
+income_data <- read_csv("income_data.csv")
+```
+### ii) scatterplot
+```{r}
+ggplot(income_data, aes(x = income, y = happiness)) +
+  geom_point() +
+  labs(title = "Scatterplot of Happiness vs Income",
+       x = "Income (€10,000)",
+       y = "Happiness (1-10)") +
+  theme_minimal()
+```
+### iii) means
+```{r}
+mean_income <- mean(income_data$income)
+mean_happiness <- mean(income_data$happiness)
+```
+### iii) sample variances
+```{r}
+var_income <- var(income_data$income)
+var_happiness <- var(income_data$happiness)
+```
+### iii) covariance
+```{r}
+cov_income_happiness <- cov(income_data$income, income_data$happiness)
+```
+### iii) results
+```{r}
+mean_income; mean_happiness
+var_income; var_happiness
+cov_income_happiness
+```
+### iv) linear regression model
+```{r}
+model <- lm(happiness ~ income, data = income_data)
+summary(model)
+```
+### v) 
+The intercept is about 0.204, which would be the predicted happiness score if someone had zero income. That’s not super realistic, but it's just what the model says when income = 0.
+The slope is around 0.714, which means that for every extra €10,000 in income, happiness goes up by about 0.71 points. So higher income is clearly linked to higher happiness here.
+
+### vi)
+The p-value for the income variable is small enough (< 2e-16), so it's clearly statistically significant — income really does explain differences in happiness.
+Also, the R-squared is about 0.75, which means that around 75% of the variation in happiness can be explained just by income. That’s actually a pretty strong fit for a simple regression.
+
+### vii) slope of the regression line
+```{r}
+beta1_manual <- cov_income_happiness / var_income
+beta1_manual
+```
+### viii) estimated regression line
+```{r}
+ggplot(income_data, aes(x = income, y = happiness)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "blue") +
+  labs(title = "Happiness vs Income with Regression Line",
+       x = "Income (€10,000)", y = "Happiness") +
+  theme_minimal()
+```
+
+### ix) Breusch-Pagan test
+
+```{r}
+bptest(model)
+```
+### x)
+Heteroskedasticity means the spread of the errors isn’t the same for all values of income. This messes with the standard errors of our estimates, so even if our model looks okay, the confidence intervals and p-values might be wrong. That can lead to bad conclusions about which variables matter.
+In our case, the Breusch-Pagan test gave a p-value of 0.245, so there’s no strong evidence of heteroskedasticity — that’s good.
+

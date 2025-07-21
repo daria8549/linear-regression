@@ -1,0 +1,104 @@
+---
+title: "LR_Assignment_3"
+author: "Polianska Daria, Nikola Mihajlovic"
+date: "2025-06-05"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ggplot2)
+library(readr)
+library(car)
+library(broom)
+```
+### Load the dataset
+```{r}
+ceo_data <- read_csv("dataceo.csv")
+```
+### i) Histograms before and after log transformation
+```{r}
+hist(ceo_data$salary, main ="Histogram of Salary", xlab = "Salary ($1,000)", col = "skyblue")
+hist(log(ceo_data$salary), main = "Histogram of log(Salary)", xlab = "log(Salary)", col = "lightgreen")
+
+hist(ceo_data$assets, main = "Histogram of Assets", xlab = "Assets", col = "skyblue")
+hist(log(ceo_data$assets), main = "Histogram of log(Assets)", xlab = "log(Assets)", col ="lightgreen")
+```
+Both salary and assets histograms are highly right-skewed, meaning most values are low with a few high outliers. After log transformation, both distributions appear more symmetrical and balanced.
+
+### ii) Two regression models
+```{r}
+model_linear <- lm(salary ~ assets, data = ceo_data)
+model_log <- lm(log(salary) ~ log(assets), data =ceo_data)
+
+summary(model_linear)
+summary(model_log)
+```
+In the linear model, each additional million in assets increases CEO salary by about $11.48k. The relationship is statistically significant (p < 2e-16). In the log-log model, a 1% increase in assets leads to a 0.23% increase in salary. While both models are significant, their coefficients differ due to the scale. The log-log model offers a clearer, more stable relationship and handles skewed data better.
+
+### iii) Scatterplots with regression lines
+```{r}
+ggplot(ceo_data, aes(x = assets, y = salary)) +
+  geom_point() +
+  geom_smooth(method =  "lm", se = FALSE, color = "blue") +
+  labs(title = "Salary vs Assets", x = "Assets", y= "Salary ($1,000)")
+
+ggplot(ceo_data, aes(x = log(assets), y = log(salary))) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "darkgreen") +
+  labs(title = "log(Salary) vs log(Assets)", x ="log(Assets)", y = "log(Salary)")
+```
+I prefer the second scatterplot — log(Salary) vs log(Assets). In the first, most points cluster in the bottom left, making the trend hard to see. The regression line cuts through this noise and doesn't reflect the actual pattern. The second plot spreads the data more evenly, and the trend is clearly visible. The log transformation seems to better capture the underlying relationship, potentially non-linear in nature.
+
+### iv) Residual plots
+```{r}
+residualPlot(model_linear, main = "Residuals of Linear Model")
+residualPlot(model_log, main = "Residuals of Log-Log Model")
+```
+Residual plots further support this. In the linear model, residuals are clumped with some extreme outliers, while in the log-log model they’re more evenly spread, and the blue line is flat, indicating no major patterns are missed.
+
+### v) Histogram of CEO age
+```{r}
+hist(ceo_data$age, main = "Histogram of Age", xlab = "Age", col = "lightcoral")
+```
+The age variable is already well-behaved and doesn’t require transformation.
+
+### vi) Linear and quadratic models with age
+```{r}
+model_age_linear <- lm(log(salary) ~ age, data = ceo_data)
+model_age_quad <- lm(log(salary) ~ age + I(age^2), data = ceo_data)
+
+summary(model_age_linear)
+summary(model_age_quad)
+```
+The linear model shows that as age increases, logged salary slightly increases. 
+In the quadratic model, age has a positive effect while age² has a negative one, suggesting an inverted U-shaped relationship: CEOs earn more as they age, but not forever.
+
+### vii) Scatterplot with both fits
+```{r}
+ggplot(ceo_data, aes(x = age, y = log(salary))) +
+  geom_point() +
+  stat_smooth(method = "lm", formula = y ~ x, se = FALSE, col = "blue") +  # linear
+  stat_smooth(method = "lm", formula = y ~ x + I(x^2), se = FALSE, col = "red") +  # quadratic
+  labs(title = "log(Salary) vs Age with Linear and Quadratic Fit",
+       x = "Age", y = "log(Salary)")
+```
+I prefer the quadratic model. The red curve fits the data better, capturing the rise and fall of salaries with age, which the linear model misses.
+
+### viii) Residual plots for age models
+```{r}
+residualPlot(model_age_linear, main = "Residuals: log(Salary) ~ Age")
+residualPlot(model_age_quad, main = "Residuals: log(Salary) ~ Age + Age^2")
+
+```
+Residuals from the quadratic model are also more randomly spread, showing a better fit and adherence to linear regression assumptions.
+Both visualizations and residual diagnostics support the quadratic model as the more realistic representation of how salary relates to age.
+
+### Authors: Polianska Daria -  h1213195; Nikola Mihajlovic - h1528753;
+
+
+
+
