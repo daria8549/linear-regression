@@ -16,7 +16,6 @@ library(ggplot2)
 library(readr)
 library(lmtest)
 ```
-# Authors: Polianska Daria -  h1213195; Nikola Mihajlovic - h1528753;
 
 ### i) load the dataset
 ```{r}
