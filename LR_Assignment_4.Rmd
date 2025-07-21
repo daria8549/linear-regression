@@ -1,6 +1,5 @@
 ---
-title: "assignment_4_h1528753_h1213195"
-author: "Mihajlovic Nikola - h1528753; Polianska Daria - h1213195"
+title: "Assignment_4"
 date: "2025-06-13"
 output:
   html_document:
