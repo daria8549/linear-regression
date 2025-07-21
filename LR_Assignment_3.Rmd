@@ -1,6 +1,5 @@
 ---
 title: "LR_Assignment_3"
-author: "Polianska Daria, Nikola Mihajlovic"
 date: "2025-06-05"
 output: pdf_document
 ---
@@ -97,7 +96,6 @@ residualPlot(model_age_quad, main = "Residuals: log(Salary) ~ Age + Age^2")
 Residuals from the quadratic model are also more randomly spread, showing a better fit and adherence to linear regression assumptions.
 Both visualizations and residual diagnostics support the quadratic model as the more realistic representation of how salary relates to age.
 
-### Authors: Polianska Daria -  h1213195; Nikola Mihajlovic - h1528753;
 
 
 
